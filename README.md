@@ -1,4 +1,4 @@
-# banco_de_provas
+# Sistema simples para gerenciamento de questões de prova
 
 Para instalar precisamos do python 2 e django 1.8.19.
 
