@@ -1,0 +1,24 @@
+<!-- Header -->
+<div id="header">
+    <div id="branding">
+
+        <h1 id="site-name">Sistema de provas - Bem vindo
+            {% if user.first_name or user.last_name %}
+                {{ user.first_name }} {{ user.last_name }}
+            {% else %}
+                {{ user }}
+            {%endif%}
+            </h1>
+
+
+    </div>
+
+    <div id="user-tools">
+        Você está logado como:
+        <strong>{{ user }}</strong>.
+        <a href="/admin/password_change/">
+
+            Alterar senha</a> /<a href="/accounts/logout/">
+        Encerrar sessão</a>
+    </div>
+</div>

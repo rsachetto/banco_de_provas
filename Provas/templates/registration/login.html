@@ -1,0 +1,66 @@
+{% load admin_static %}
+
+<html lang="pt-br">
+<head>
+    <title></title>
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/admin/css/base.css"/>
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/admin/css/login.css" />
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
+
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/media/js/core.js"></script>
+<script type="text/javascript" src="/media/js/admin/RelatedObjectLookups.js"></script>
+
+<script type="text/javascript">
+window.__admin_media_prefix__ = "{% filter escapejs %}{% static '' %}{% endfilter %}";
+</script>
+
+</head>
+
+<body class="login">
+
+<!-- Container -->
+<div id="container">
+
+<!-- Header -->
+    <div id="header">
+        <div id="branding">
+
+<h1 id="site-name">Banco de Questões</h1>
+
+        </div>
+
+
+    </div>
+    <!-- END Header -->
+
+    <!-- Content -->
+    <div id="content" class="colM">
+
+
+{% if form.errors %}
+<div class="errornote">Senha ou usuários inválidos. Tente novamente.</div>
+{% endif %}
+
+<div id="content-main">
+<form method="post" action="{% url "django.contrib.auth.views.login" %}">
+</div>
+{% csrf_token %}
+
+   <div class="form-row"> {{ form.username.label_tag }}: {{ form.username }}</div>
+   <div class="form-row"> {{ form.password.label_tag }}: {{ form.password }}</div>
+
+<div class="submit-row"><label>&nbsp;</label><input type="submit" value="login"/> </div>
+<input type="hidden" name="next" value="{{ next }}" />
+</form>
+ <script type="text/javascript">
+document.getElementById('id_username').focus()
+</script>
+</div>
+
+        <br class="clear" />
+    </div>
+<div id="footer"></div>
+</div>
+</body>

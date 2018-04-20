@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% load admin_static %}
+{% load order_by %}
+
+{% block title %}Criar provas{% endblock %}
+{% block extrahead %}
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css" />
+    <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
+
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+
+    <script type="text/javascript">
+        window.__admin_media_prefix__ = "/static/admin/";
+    </script>
+
+    <!--#TODO: Usar ajax aqui-->
+    <script type="text/javascript">
+        function otherDismissAddAnotherPopup(win, newId, newRepr) {
+            var myurl = win.location.href.toString();
+            var i = myurl.indexOf("questao")
+
+            if (i != -1) {
+                window.location.reload();
+            }
+
+            win.close();
+         }
+         window.dismissAddAnotherPopup = otherDismissAddAnotherPopup;
+    </script>
+
+{% endblock %}
+
+{% block body %}
+
+    <body class="dashboard">
+
+    <!-- Container -->
+    <div id="container">
+
+        {% include "header.html" %}
+
+        <div id="content" class="colSM">
+
+            <div id="content-related">
+                {% include "menu.html" %}
+            </div>
+            <div id="content-main">
+                <div class="module">
+                        <table>
+                            <caption>Questões arquivadas - Geral: </caption>
+                            <tbody>
+                                <tr>
+                                    <th scope="row"> Total: </th>
+                                    <th>{{ total }} </th>                       
+                                </tr>
+                                <tr>
+                                    <th scope="row">{{ classificada_f }} como Fácil:</th>
+                                    <th>{{ faceis }}</th>
+                                </tr>
+                                <tr>
+                                    <th scope="row"> {{ classificada_m }} como Média:</th>
+                                    <th>{{ medias }}</th>
+                                </tr>
+                                <tr>
+                                    <th scope="row">{{ classificada_d }} como Difícil:</th>
+                                    <th>{{ dificeis }} </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>    
+                {% for c in cursos|order_by:"nome"%}
+                    {% for d, total in disciplinas.items %}
+                        {% if c.nome in d %}
+                        <div class="module">
+                            <table>
+                                <caption>{{ c }} - {{ d.0 }}</caption>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row"> Total: </th>
+                                        <th>{{ total }} </th>                       
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"> Classificadas como fácil: </th>
+                                        <th>{{ faceis_por_d|hash:d.0 }} </th>                       
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"> Classificadas como média: </th>
+                                        <th>{{ medias_por_d|hash:d.0 }} </th>                       
+                                    </tr>
+                                    <tr>
+                                        <th scope="row"> Classificadas como difícil: </th>
+                                        <th>{{ dificies_por_d|hash:d.0 }} </th>                       
+                                    </tr>                                                                                  
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    {% endfor %}                   
+                {% endfor %}     
+            </div>
+            <br class="clear" />
+        </div>
+    </div>
+    </body>
+{% endblock %}

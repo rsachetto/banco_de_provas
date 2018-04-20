@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+
+{% block title %}Criar provas{% endblock %}
+{% block extrahead %}
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/widgets.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
+
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+
+
+    <script type="text/javascript" src="/static/admin/js/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.min.js"></script>
+
+    <script type="text/javascript">
+        window.__admin_media_prefix__ = "/static/admin/";
+    </script>
+
+
+    <script type="text/javascript">
+        function resize() {
+            window.resizeTo(550,630);
+        }
+        function otherDismissAddAnotherPopup(win, newId, newRepr) {
+              win.close();
+         }
+         window.dismissAddAnotherPopup = otherDismissAddAnotherPopup;
+    </script>
+
+    {{ form.media }}
+{% endblock %}
+
+{% block body %}
+    <body class="dashboard" style="max-width: 500px" onload="resize()">
+
+    <!-- Container -->
+    <div id="container" style="min-width: 500px">
+        <div id="content" style="margin: 10px 15px" >
+            {% if error %}
+                <div class="errornote">{{ error|linebreaksbr }}</div>
+            {% endif %}
+
+            <div id="content-main">
+
+                <form action="." method="post">
+                    {% csrf_token %}
+                    <fieldset class="module aligned">
+                        {% for field in form %}
+                            <div class="form-row">
+                                {{ field.errors }}
+                                <label>{{ field.label_tag }}</label>
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                        <div class="submit-row" > <input type="submit"  class="default" value="Salvar e fechar" name="_save"/> <input type="submit" value="Salvar e adicionar outra" name="_addmore" /></div>
+                    </fieldset>
+
+                </form>
+            </div>
+        </div>
+    </div>
+    </body>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+
+{% block title %}{{ prova  }} {% endblock %}
+{% block extrahead %}
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css"/>
+    <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/static/admin/css/ie.css" /><![endif]-->
+
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+
+    <script type="text/javascript" src="/static/admin/js/jquery.js"></script>
+
+    <script type="text/javascript">
+        window.__admin_static/admin_prefix__ = "/static/admin/";
+    </script>
+
+
+    <script type="text/javascript">
+        function otherDismissAddAnotherPopup(win, newId, newRepr) {
+            win.close();
+        }
+        window.dismissAddAnotherPopup = otherDismissAddAnotherPopup;
+    </script>
+
+    <script type="text/javascript" charset="utf-8">
+
+        String.prototype.format = function() {
+            var s = this,
+                    i = arguments.length;
+
+            while (i--) {
+                s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+            }
+            return s;
+        };
+
+        $(function(){
+
+            $.ajaxSetup ({
+                cache: false
+            });
+
+            var loadUrl = "/provas/";
+            $("#do_filter").click(function(){
+                var dataToBeSent = $("#tf").serialize();
+
+                $.post(loadUrl, dataToBeSent ,function(data) {
+                    var table =  '       \
+                                 <table> \
+                                    <caption>Provas</caption>  \
+                                    <tbody> \
+                                 ';
+
+                    if(data.length == 0) {
+                        table += ' <tr> \
+                                <th scope="row">Nenhuma prova criada</th> \
+                                <td>&nbsp;</td> \
+                            </tr>';
+                    }
+                    else {
+                        for (var i = 0; i < data.length; i++) {
+                            table += ' \
+                                    <tr> \
+                                        <th> \
+                                            <a href="/prova/{0}">{1}</a> \
+                                        </th> \
+                                        <td> \
+                                        <a onclick="return confirm("Tem certeza que quer apagar esta prova?");" href="/prova/del/{0}" class="deletelink">Remover prova</a> <br/> \
+                                        <a rel="nofollow"  href="/baixar_fonte/{0}">Baixar fonte latex.</a> \
+                                </td> \
+                                </tr>'.format(data[i].pk, data[i].prova);
+
+                        }
+                    }
+                    table += '</tbody> \
+                             </table>';
+                    $("div#tabela_provas").html(table);
+                }, "json")
+            });
+
+            $("select#id_curso").change(function(){
+                if ($(this).val() != "") {
+                    $.getJSON("/disciplinas/"+$(this).val(), function(j){
+                        var options = '<option value="" selected="selected">---------</option>';
+                        for (var i = 0; i < j.length; i++) {
+                            options += '<option value="' + j[i].pk + '">' + j[i].fields["nome"] + '</option>\n';
+                        }
+                        $("select#id_disciplina").html(options);
+                    })
+                }
+                else {
+                    $("select#id_disciplina").html("<option value=''>---------</option>");
+                }
+            })
+
+        })
+
+    </script>
+
+{% endblock %}
+
+{% block body %}
+    <body class="dashboard">
+
+    <!-- Container -->
+    <div id="container">
+        {% include "header.html" %}
+
+        <div id="content" class="colSM  " style="width:32%">
+            <div id="content-main">
+                <div class="module">
+                    <form action="" method="post" id="tf">
+                        {% csrf_token %}
+                        <table>
+                            <caption>Filtro</caption>
+                            <tbody>
+                            <tr>
+                                {% for field in form %}
+                                    <td><label>{{ field.label_tag }}:</label>
+                                        {{ field }}</td>
+                                {% endfor %}
+                                <th><input id="do_filter" type="button" value="Filtrar" /></th>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div id="tabela_provas" class="module">
+                    <table>
+                        <caption>Provas</caption>
+                        <tbody>
+                        {% if not provas %}
+                            <tr>
+                                <th scope="row">Nenhuma prova criada</th>
+                                <td>&nbsp;</td>
+                            </tr>
+                        {% endif %}
+                        {% for p in provas%}
+                            <tr>
+                                <th>
+                                    <a href="/prova/{{ p.pk }}">{{ p }}</a>
+                                </th>
+                                <td>
+                                    <a onclick="return confirm('Tem certeza que quer apagar esta prova?');" href="/prova/del/{{ p.pk }}" class="deletelink">Remover prova</a> <br/>
+                                    <a rel="nofollow" href="/baixar_fonte/{{ p.pk }}" >Baixar fonte latex.</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="content-related">
+                {% include "menu.html" %}
+            </div>
+            <br class="clear" />
+        </div>
+    </div>
+    </body>
+{% endblock %}
