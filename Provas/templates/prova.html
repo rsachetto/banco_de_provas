@@ -60,12 +60,10 @@
                                    <a rel="nofollow" href="/baixar_fonte_gabarito/{{ prova.pk }}" >Baixar fonte latex com gabarito.</a>
                                 </th>
                             </tr>
-                              <tr>
-                            <th colspan="3">
+                        {% endif %}
+                        <th colspan="3">
                                 <a href="/questoes/add/{{ prova.pk }}" class="addlink" onclick="return showAddAnotherPopup(this);">Adicionar questão</a>
                             </th>
-                        </tr>
-                        {% endif %}
                             {% if prova.questoes.all %}
                                 <tr>
                                     <th>Enunciado</th>
@@ -78,6 +76,8 @@
                                     <td>&nbsp;</td>
                                 </tr>
                             {% endif %}
+                           <tr>
+                        </tr>
                         {% for f in prova.questoes.all|order_by:"dificuldade" %}
                             <tr>
                                 <th>
