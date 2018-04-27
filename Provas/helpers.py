@@ -113,6 +113,7 @@ def cria_prova_vazia(disciplina, numero_prova, valor, data_aplicacao, curso):
     prova.data_aplicacao = data_aplicacao
     prova.disciplina = disciplina
     prova.curso = curso
+    prova.ordem_questoes = []
 
     prova.save()
 
@@ -214,76 +215,14 @@ def cria_prova_aleatoria(disciplina, numero_prova, numero_questoes,
 
     return p,""
 
-def gera_latex(prova):
+def gera_latex(prova, gabarito):
 
-    arquivo_prova = str(prova).replace(" ", "") + str(int(time.time())) + ".tex"
+    if(gabarito):
+        arquivo_prova = str(prova).replace(" ", "") + "GABARITO" + str(int(time.time())) + ".tex"
+    else:
+        arquivo_prova = str(prova).replace(" ", "") + str(int(time.time())) + ".tex"
 
-    tex = codecs.open("/tmp/"+arquivo_prova, 'w', "iso-8859-1")
-
-    tex.write(CABECALHO)
-
-    ano, mes, _ = str(prova.data_aplicacao).split("-")
-
-    mes = int(mes)
-
-    semestre = 1
-
-    if mes > 8:
-        semestre = 2
-
-    aux = u"""{{{0:>s}}}
-  {{\\textbf{{{1:d}\seqabf\ Prova }}}}
-  {{ {2:>s} }}
-  {{{3:d}\seqo\ Semestre de {4:>s}}}
-
-\\noindent\\textbf{{Observações}}:
-\\begin{{alphaenum}}
-\parindent 0mm
-\parskip 0mm
-\\topsep 0mm
-\partopsep 0mm
-\itemindent 0mm
-\itemsep 0mm
-\im Faz parte da prova a interpretação das questões. Se você achar
-que está faltando algum detalhe no enunciado da questão, você
-deverá fazer as suposições que achar necessárias e escrever estas
-suposições juntamente com as res\-pos\-tas.
-
-\im Todas as respostas devem ser justificadas.
-
-\im Prova individual e sem consulta com duração de 100 minutos.
-
-\im Valor desta prova: {5:>d} pontos.
-
-\im Não esqueça de escrever seu nome na folha de res\-pos\-tas e na folha de enunciado.
-
-\\textsc{{Boa Sorte!}}
-\end{{alphaenum}}
-
-
-""".format(prova.disciplina, prova.numero_prova, prova.curso, semestre, ano, prova.valor)
-
-    tex.write(aux)
-
-    questao = u"\section*{\\ul{\\nextval{ª} Questão} \\textrm{\\normalsize\\textsc{(%d pontos)}}}"
-
-    for q in prova.questoes.all():
-        tex.write(questao % q.valor_sugerido)
-        tex.write("\n")
-        enunciado = unicode(q.enunciado)
-        tex.write(enunciado)
-        tex.write("\n")
-
-
-    tex.write("\end{document}")
-    tex.close()
-    return arquivo_prova
-
-def gera_latex_gabarito(prova):
-
-    arquivo_prova = str(prova).replace(" ", "") + "GABARITO" + str(int(time.time())) + ".tex"
-
-    tex = codecs.open("/tmp/"+arquivo_prova, 'w', "iso-8859-1")
+    tex = codecs.open("/tmp/"+arquivo_prova, 'w', "utf-8")
 
     tex.write(CABECALHO)
 
@@ -332,19 +271,26 @@ suposições juntamente com as res\-pos\-tas.
 
     questao = u"\section*{\\ul{\\nextval{ª} Questão} \\textrm{\\normalsize\\textsc{(%d pontos)}}}"
 
-    for q in prova.questoes.all():
+    questoes = []
+
+    for index in prova.ordem_questoes:
+        questoes.append(prova.questoes.get(pk=int(index)))
+
+    for q in questoes:
         tex.write(questao % q.valor_sugerido)
         tex.write("\n")
         enunciado = unicode(q.enunciado)
         tex.write(enunciado)
         tex.write("\n")
-        tex.write("RESPOSTA:")
-        resposta = unicode(q.resposta)
-        if(resposta != "None"):
-            tex.write(resposta)
-        else:
-            tex.write(u"Não adicionada")
-        tex.write("\n")
+        if(gabarito):
+            tex.write("\n")
+            tex.write("RESPOSTA:")
+            resposta = unicode(q.resposta)
+            if (resposta != "None"):
+                tex.write(resposta)
+            else:
+                tex.write(u"Não adicionada")
+            tex.write("\n")
 
 
     tex.write("\end{document}")

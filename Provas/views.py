@@ -113,7 +113,7 @@ def prova_vazia(request):
             data_aplicacao =  form.cleaned_data["data_aplicacao"]
             curso = form.cleaned_data["curso"]
 
-            p= helpers.cria_prova_vazia(disciplina, numero_prova,
+            p = helpers.cria_prova_vazia(disciplina, numero_prova,
                                               valor, data_aplicacao,
                                               curso)
 
@@ -205,14 +205,61 @@ def prova_aleatoria(request):
         form = CriaProvaAleatoriaForm()
         return render_to_response('form_prova_aleatoria.html', { 'form': form, },
                                   context_instance=RequestContext(request))
+
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+@ensure_csrf_cookie
 @login_required()
 def mostra_prova(_, prova_id):
     try:
+        print prova_id
         prova = Prova.objects.get(pk=prova_id)
+        questoes = []
+        count = 0
+
+        for index in prova.ordem_questoes:
+            q = prova.questoes.get(pk=int(index))
+            q.valor_sugerido = prova.valores_questoes[count]
+            count += 1
+
+            questoes.append(q)
+
+
     except Prova.DoesNotExist:
         raise Http404
 
-    return render_to_response('prova.html', {'prova': prova})
+    return render_to_response('prova.html', {'prova': prova, 'questoes': questoes})
+
+
+
+import json
+
+@login_required()
+def atualiza_valor_questao(request):
+
+    if request.is_ajax():
+        if request.method == 'POST':
+
+            data = json.loads(request.body)
+            id_prova = data['id_prova']
+            id_questao = int(data['id_questao'])
+            valor = float(data['valor_questao'])
+
+            prova = Prova.objects.get(pk=id_prova)
+
+            indice_questao = prova.ordem_questoes.index(unicode(id_questao))
+            prova.valores_questoes[indice_questao] = valor
+            try:
+                prova.save()
+                return HttpResponse("OK")
+            except:
+                return HttpResponse("ERROR")
+
+
+    else:
+        raise Http404
+
+
 
 @login_required()
 def mostra_questoes(request, prova_id, questao_id):
@@ -236,7 +283,6 @@ def mostra_questoes(request, prova_id, questao_id):
                     questoes = Questao.objects.filter(disciplinas__in=[prova.disciplina], dificuldade=dif).exclude(pk__in=excluir_pks).order_by("dificuldade")
 
             data = serializers.serialize('json', questoes)
-            print data
             return HttpResponse(data)
 
         else:
@@ -260,16 +306,25 @@ def adiciona_questoes(request, prova_id):
     return mostra_questoes(request, prova_id, -1)
 
 @login_required()
-def modifica_prova(_, prova_id, questao_id, nova_questao_id, questao_valor):
+def modifica_prova(_, prova_id, questao_id, nova_questao_id):
     try:
         prova = Prova.objects.get(pk=prova_id)
+        questao_nova = Questao.objects.get(pk=nova_questao_id)
 
         if int(questao_id) > -1:
             questao_antiga = Questao.objects.get(pk=questao_id)
             prova.questoes.remove(questao_antiga)
 
-        questao_nova = Questao.objects.get(pk=nova_questao_id)
-        questao_nova.valor_sugerido = questao_valor
+            indice_questao_antiga = prova.ordem_questoes.index(questao_id)
+            prova.ordem_questoes[indice_questao_antiga] = nova_questao_id
+            prova.valores_questoes[indice_questao_antiga] = float(questao_nova.valor_sugerido)
+
+        else:
+            prova.num_questoes = prova.num_questoes + 1
+            prova.ordem_questoes.append(nova_questao_id)
+            prova.valores_questoes.append(float(questao_nova.valor_sugerido))
+
+
         prova.questoes.add(questao_nova)
         prova.save()
 
@@ -284,6 +339,12 @@ def remove_questao(_, prova_id, questao_id):
         prova = Prova.objects.get(pk=prova_id)
         questao_antiga = Questao.objects.get(pk=questao_id)
         prova.questoes.remove(questao_antiga)
+
+        indice_questao_antiga = prova.ordem_questoes.index(questao_id)
+        del prova.ordem_questoes[indice_questao_antiga]
+        del prova.valores_questoes[indice_questao_antiga]
+
+        prova.num_questoes = prova.num_questoes - 1
         prova.save()
 
     except Prova.DoesNotExist:
@@ -307,7 +368,7 @@ def baixar_fonte(_, prova_id):
     try:
         prova = Prova.objects.get(pk=prova_id)
 
-        fonte_prova = helpers.gera_latex(prova)
+        fonte_prova = helpers.gera_latex(prova, False)
 
         return redirect('/fontes/%s' % fonte_prova)
 
@@ -320,7 +381,7 @@ def baixar_fonte_gabarito(_, prova_id):
     try:
         prova = Prova.objects.get(pk=prova_id)
 
-        fonte_prova = helpers.gera_latex_gabarito(prova)
+        fonte_prova = helpers.gera_latex(prova, True)
 
         return redirect('/fontes/%s' % fonte_prova)
 

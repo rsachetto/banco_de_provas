@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+import ast
 import time
 # Create your models here.
 
@@ -8,6 +9,32 @@ DIFICULDADES = (
     (2, 'Média'),
     (3, 'Difícil')
 )
+
+class ListField(models.TextField):
+    __metaclass__ = models.SubfieldBase
+    description = "Stores a python list"
+
+    def __init__(self, *args, **kwargs):
+        super(ListField, self).__init__(*args, **kwargs)
+
+    def to_python(self, value):
+        if not value:
+            value = []
+
+        if isinstance(value, list):
+            return value
+
+        return ast.literal_eval(value)
+
+    def get_prep_value(self, value):
+        if value is None:
+            return value
+
+        return unicode(value)
+
+    def value_to_string(self, obj):
+        value = self._get_val_from_obj(obj)
+        return self.get_db_prep_value(value)
 
 class Curso(models.Model):
     nome = models.CharField(max_length=50, unique=True)
@@ -51,6 +78,10 @@ class Prova(models.Model):
     numero_prova = models.IntegerField()
     valor = models.IntegerField()
     curso = models.ForeignKey(Curso)
+    ordem_questoes = ListField()
+    valores_questoes = ListField()
+    num_questoes = models.IntegerField(default=0)
+
 
     def __unicode__(self):
         data_certa = time.strptime(str(self.data_aplicacao),"%Y-%m-%d")
@@ -59,4 +90,3 @@ class Prova(models.Model):
                (self.disciplina, self.numero_prova,
                 time.strftime("%d-%m-%Y", data_certa),
                 self.valor)
-

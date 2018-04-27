@@ -61,7 +61,7 @@
                     }
                     else {
                         
-                        table += '<tr><th>Enunciado</th> <th>Dificuldade</th><th>Valor</th><th>Ações</th></tr>';
+                        table += '<tr><th>Enunciado</th><th>Valor Sugerido</th><th>Dificuldade</th><th>Ações</th></tr>';
                         
                         for (var i = 0; i < data.length; i++) {
                             table += ' \
@@ -69,16 +69,16 @@
                                         <th> \
                                             {0} \
                                         </th> \
+                                        <th> \
+                                            {1}\
+                                        </th> \
                                         <td> \
-                                        {1} \
+                                        {2} \
                                 </td> \
                                 <td> \
-                                        <input type="text" name=\"{5}\" size="6" value = \"{2}\" /> \
+                                <a href="/modifica_prova/{3}/{4}/{5}">Escolher esta.</a> \
                                 </td> \
-                                <td> \
-                                <a href="/modifica_prova/{3}/{4}/{5}/{6}">Escolher esta.</a> \
-                                </td> \
-                                </tr>'.format(data[i]['fields']['enunciado'], difs[data[i]['fields']['dificuldade']], data[i]['fields']['valor_sugerido'], prova_id, questao_id, data[i].pk,  data[i]['fields']['valor_sugerido'].replace(',','.'));
+                                </tr>'.format(data[i]['fields']['enunciado'], data[i]['fields']['valor_sugerido'], difs[data[i]['fields']['dificuldade']], prova_id, questao_id, data[i].pk);
                     
                         }
                     }
@@ -128,7 +128,7 @@
                         {% if questoes.all %}
                             <tr>
                                 <th>Enunciado</th>
-                                <th>Valor</th>
+                                <th>Valor Sugerido</th>
                                 <th>Dificuldade</th>
                                 <th>Ações</th>
                             </tr>
@@ -143,9 +143,9 @@
                                 <th>
                                     {{ f.enunciado|linebreaksbr }}
                                 </th>
-                                   <th>
-                                    <input type="text" name="{{ f.pk }}" size="6" value = "{{ f.valor_sugerido }}" />
-                                </th>
+                                <td>
+                                    {{ f.valor_sugerido|linebreaksbr }}
+                                </td>
                                 <td >
                                     {% if f.dificuldade == 1%}
                                         Fácil
@@ -158,7 +158,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="/modifica_prova/{{ prova_id }}/{{ questao_id }}/{{ f.pk }}/{{ f.valor_sugerido | sub_comma_to_point}}">Escolher esta.</a>
+                                    <a href="/modifica_prova/{{ prova_id }}/{{ questao_id }}/{{ f.pk }}">Escolher esta.</a>
                                 </td>
                             </tr>
 
