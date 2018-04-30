@@ -159,6 +159,9 @@
                                     <br/>
                                     <a onclick="return confirm('Tem certeza que quer apagar esta questão?');" href="/questoes/del/{{ prova.pk }}/{{ f.pk }}" class="deletelink">Remover questão</a>
                                 </td>
+                            <td><p>Up arrow: <i class="arrow up"></i></p><br/>
+                            <p>Down arrow: <i class="arrow down"></i></p>
+                            </td>
                             </tr>
                         {% endfor %}
                         </tbody>
