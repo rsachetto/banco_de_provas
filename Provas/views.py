@@ -251,6 +251,58 @@ def atualiza_valor_questao(request):
             prova.valores_questoes[indice_questao] = valor
             try:
                 prova.save()
+
+                soma = 0.0
+
+                for val in prova.valores_questoes:
+                    soma+= float(val)
+
+                if(soma > prova.valor):
+                    return HttpResponse("ACIMA")
+                elif(soma < prova.valor):
+                    return HttpResponse("ABAIXO")
+                else:
+                    return HttpResponse("OK")
+            except:
+                return Http404
+        else:
+            return Http404
+
+    else:
+        raise Http404
+
+@login_required()
+def atualiza_ordem_questao(request):
+
+    if request.is_ajax():
+        if request.method == 'POST':
+
+            data = json.loads(request.body)
+            id_prova = data['id_prova']
+            id_questao = int(data['id_questao'])
+            ordem_atual = int(data['ordem_atual'])
+            direcao = data['direcao']
+
+            prova = Prova.objects.get(pk=id_prova)
+
+            if direcao == 'u':
+                nova_ordem = ordem_atual - 1
+            elif direcao == 'd':
+                nova_ordem = ordem_atual + 1
+            else:
+                return HttpResponse("ERROR")
+
+            id_aux = prova.ordem_questoes[nova_ordem]
+            prova.ordem_questoes[nova_ordem] = unicode(id_questao)
+            prova.ordem_questoes[ordem_atual] = id_aux
+
+            valor_aux = float(prova.valores_questoes[nova_ordem])
+            prova.valores_questoes[nova_ordem] = float(prova.valores_questoes[ordem_atual])
+            prova.valores_questoes[ordem_atual] = valor_aux
+
+
+            try:
+                prova.save()
                 return HttpResponse("OK")
             except:
                 return HttpResponse("ERROR")

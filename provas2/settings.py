@@ -84,7 +84,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 #STATIC_ROOT = '../provas2/Provas/static/'
 STATIC_ROOT = ''
-STATIC_DOC_ROOT = '/tmp'
+
+import tempfile
+STATIC_DOC_ROOT = tempfile.gettempdir()
 
 LOGIN_URL = '/accounts/login/'
 

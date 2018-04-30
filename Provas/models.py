@@ -69,6 +69,15 @@ class Questao(models.Model):
         return "Assunto: %s, Dificuldade %s, Prova: %s" % \
         (self.assunto, self.dificuldade, self.numero_prova)
 
+        # This should touch before saving
+
+    # def save(self, *args, **kwargs):
+    #     import textwrap
+    #
+    #     self.enunciado = textwrap.fill(self.enunciado, 50)
+    #     self.resposta = textwrap.fill(self.resposta, 50)
+    #     super(Questao, self).save(*args, **kwargs)
+
 
 class Prova(models.Model):
 

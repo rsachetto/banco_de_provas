@@ -7,7 +7,9 @@
 {% block extrahead %}
     <link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
     <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/buttons.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/toastr.min.css"/>
+
     <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/media/css/ie.css" /><![endif]-->
 
     <script type="text/javascript" src="/admin/jsi18n/"></script>
@@ -44,6 +46,17 @@
 
         function salvar_valor(id_questao, valor_questao) {
 
+            toastr.options = {
+              "debug": false,
+              "positionClass": "toast-bottom-right",
+              "onclick": null,
+              "fadeIn": 300,
+              "fadeOut": 1000,
+              "timeOut": 5000,
+              "extendedTimeOut": 1000,
+              "progressBar": true,
+            };
+
             valor_questao = valor_questao.replace(",", ".");
 
             var dataToSend = {id_prova: {{ prova.id }}, id_questao: id_questao, valor_questao: valor_questao};
@@ -64,17 +77,57 @@
                   data: JSON.stringify(dataToSend),
 
                 complete: function(result) {
-                    if(result.statusText == "OK")
-                     toastr.success("Prova atualizada", "Mudança de valor realizada com sucesso");
+                    if(result.statusText === 'OK') {
+                        if(result.responseText === 'OK') {
+                            toastr.success("Mudança de valor realizada com sucesso", "Prova atualizada");
+                        }
+                        else if(result.responseText === 'ACIMA'){
+                            toastr.warning("Mudança de valor atualizada. A soma total das questões está acima do valor da prova!", "Prova atualizada")
+                        }
+                        else if(result.responseText === 'ABAIXO') {
+                            toastr.warning("Mudança de valor atualizada. A soma total das questões está abaixo do valor da prova!","Prova atualizada")
+                        }
+
+                    }
+                    else {
+                        toastr.error("Erro ao atualizar prova!")
+                    }
                 }
 
             });
         }
+
+         function mudar_ordem(id_questao, ordem, dir) {
+
+            var dataToSend = {id_prova: {{ prova.id }}, id_questao: id_questao, ordem_atual: ordem, direcao: dir};
+            var csrftoken = getCookie('csrftoken');
+
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                cache: false
+            });
+
+              $.ajax({
+                  url: '/atualiza_ordem_questao/',
+                  type: 'POST',
+                  contentType: 'application/x-www-form-urlencoded',
+                  dataType: 'json',
+                  data: JSON.stringify(dataToSend),
+
+                complete: function(result) {
+                    if (result.statusText == "OK") {
+                        window.location.reload();
+                    }
+                }
+            });
+        }
+
     </script>
 
     <script type="text/javascript">
         function otherDismissAddAnotherPopup(win, newId, newRepr) {
-
         }
         window.dismissAddAnotherPopup = otherDismissAddAnotherPopup;
     </script>
@@ -82,7 +135,7 @@
 {% endblock %}
 
 {% block body %}
-    <body class="dashboard">
+    <body>
 
     <!-- Container -->
     <div id="container">
@@ -90,37 +143,38 @@
 
         <div id="content" class="colSM">
             <div id="content-main">
-                <div class="module">
+                <div class="module" style="width: 900px;">
 
-                    <table>
+                    <table id="prova">
                         <caption>{{ prova }}</caption>
                         <tbody>
                         <tr>
-                            <th colspan="3">Curso: {{prova.curso}}</th>
+                            <th colspan="5">Curso: {{prova.curso}}</th>
                         <tr>
                         <tr>
-                            <th colspan="3">Disciplina: {{prova.disciplina}}</th>
+                            <th colspan="5">Disciplina: {{prova.disciplina}}</th>
                         <tr>
                         <tr>
-                            <th colspan="3">Data de aplicação: {{ prova.data_aplicacao|date:"d/m/Y" }}</th>
+                            <th colspan="5">Data de aplicação: {{ prova.data_aplicacao|date:"d/m/Y" }}</th>
                         <tr>
                          {% if prova.questoes.all %}
                             <tr>
-                                <th colspan="3">
+                                <th colspan="5">
                                     <a rel="nofollow" href="/baixar_fonte/{{ prova.pk }}" >Baixar fonte latex.</a></h1>
                                 </th>
                             </tr>
                             <tr>
-                                <th colspan="3">
+                                <th colspan="5">
                                    <a rel="nofollow" href="/baixar_fonte_gabarito/{{ prova.pk }}" >Baixar fonte latex com gabarito.</a>
                                 </th>
                             </tr>
                         {% endif %}
-                        <th colspan="3">
+                        <th colspan="5">
                                 <a href="/questoes/add/{{ prova.pk }}" class="addlink" onclick="return showAddAnotherPopup(this);">Adicionar questão</a>
                             </th>
                             {% if prova.questoes.all %}
                                 <tr>
+                                    <th>Ordem</th>
                                     <th>Enunciado</th>
                                     <th>Valor</th>
                                     <th>Dificuldade</th>
@@ -134,34 +188,43 @@
                             {% endif %}
                            <tr>
                         </tr>
-                        {% for f in questoes %}
-{#                        {% for f in prova.questoes.all %}#}
+                        {% for questao in questoes %}
                             <tr>
-                                <th>
-                                    {{ f.enunciado|linebreaksbr }}
+                                <th style="text-align: center">
+                                 {% if not forloop.first %}
+                                <i onclick="mudar_ordem({{ questao.pk }},{{ forloop.counter0 }}, 'u')" class="arrow up"></i>
+                                 {% endif %}
+                            {% if not forloop.last %}
+                            <i onclick="mudar_ordem({{ questao.pk }},{{ forloop.counter0 }}, 'd')" class="arrow down"></i>
+                             {% endif %}
+
+                                    {{ forloop.counter }}
+
+
+
                                 </th>
                                 <td>
-                                    <input onblur="salvar_valor(this.name, this.value)" type="text" name="{{ f.pk }}" size="5" value = "{{ f.valor_sugerido }}" />
+                                   <strong>{{ questao.enunciado | linebreaksbr}}</strong>
+                                </td>
+                                <td>
+                                    <input onblur="salvar_valor(this.name, this.value)" type="text" name="{{ questao.pk }}" size="5" value = "{{ questao.valor_sugerido }}" />
                                 </td>
                                 <td >
-                                    {% if f.dificuldade == 1%}
+                                    {% if questao.dificuldade == 1%}
                                         Fácil
                                     {% endif %}
-                                    {% if f.dificuldade == 2%}
+                                    {% if questao.dificuldade == 2%}
                                         Média
                                     {% endif %}
-                                    {% if f.dificuldade == 3%}
+                                    {% if questao.dificuldade == 3%}
                                         Difícil
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="/questoes/{{ prova.pk }}/{{ f.pk }}" class="changelink" onclick="return showAddAnotherPopup(this);">Trocar questão</a>
-                                    <br/>
-                                    <a onclick="return confirm('Tem certeza que quer apagar esta questão?');" href="/questoes/del/{{ prova.pk }}/{{ f.pk }}" class="deletelink">Remover questão</a>
+                                    <a href="/questoes/{{ prova.pk }}/{{ questao.pk }}" class="changelink" onclick="return showAddAnotherPopup(this);">Trocar</a>
+                                    <br/><br/>
+                                    <a onclick="return confirm('Tem certeza que quer apagar esta questão?');" href="/questoes/del/{{ prova.pk }}/{{ questao.pk }}" class="deletelink">Remover</a>
                                 </td>
-                            <td><p>Up arrow: <i class="arrow up"></i></p><br/>
-                            <p>Down arrow: <i class="arrow down"></i></p>
-                            </td>
                             </tr>
                         {% endfor %}
                         </tbody>

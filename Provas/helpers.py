@@ -215,6 +215,8 @@ def cria_prova_aleatoria(disciplina, numero_prova, numero_questoes,
 
     return p,""
 
+import tempfile
+import os
 def gera_latex(prova, gabarito):
 
     if(gabarito):
@@ -222,7 +224,7 @@ def gera_latex(prova, gabarito):
     else:
         arquivo_prova = str(prova).replace(" ", "") + str(int(time.time())) + ".tex"
 
-    tex = codecs.open("/tmp/"+arquivo_prova, 'w', "utf-8")
+    tex = codecs.open(os.path.join(tempfile.gettempdir(), arquivo_prova), 'w', "utf-8")
 
     tex.write(CABECALHO)
 
@@ -234,6 +236,23 @@ def gera_latex(prova, gabarito):
 
     if mes > 8:
         semestre = 2
+
+    questoes = []
+
+    for indice in prova.ordem_questoes:
+        questoes.append(prova.questoes.get(pk=int(indice)))
+
+    valor_total = 0.0
+
+    for i in prova.valores_questoes:
+        valor_total += float(i)
+
+    aviso_valor = ""
+
+    if valor_total > prova.valor:
+        aviso_valor = u"\\im \\textbf{A soma das questões (%.2f pontos) está acima do valor total configurado!}" % valor_total
+    elif valor_total < prova.valor:
+        aviso_valor = u"\\im \\textbf{A soma das questões (%.2f pontos) está abaixo do valor total configurado!}" % valor_total
 
     aux = u"""{{{0:>s}}}
   {{\\textbf{{{1:d}\seqabf\ Prova }}}}
@@ -259,38 +278,35 @@ suposições juntamente com as res\-pos\-tas.
 
 \im Valor desta prova: {5:>d} pontos.
 
+{6:>s}
+
 \im Não esqueça de escrever seu nome na folha de res\-pos\-tas e na folha de enunciado.
 
 \\textsc{{Boa Sorte!}}
 \end{{alphaenum}}
 
 
-""".format(prova.disciplina, prova.numero_prova, prova.curso, semestre, ano, prova.valor)
+""".format(prova.disciplina, prova.numero_prova, prova.curso, semestre, ano, prova.valor, aviso_valor)
 
     tex.write(aux)
 
     questao = u"\section*{\\ul{\\nextval{ª} Questão} \\textrm{\\normalsize\\textsc{(%d pontos)}}}"
 
-    questoes = []
-
-    for index in prova.ordem_questoes:
-        questoes.append(prova.questoes.get(pk=int(index)))
-
-    for q in questoes:
-        tex.write(questao % q.valor_sugerido)
-        tex.write("\n")
+    for v, q in enumerate(questoes):
+        tex.write(questao % prova.valores_questoes[v])
+        tex.write("\n\n")
         enunciado = unicode(q.enunciado)
         tex.write(enunciado)
-        tex.write("\n")
+        tex.write("\n\n")
         if(gabarito):
-            tex.write("\n")
-            tex.write("RESPOSTA:")
+            tex.write("\n\n")
+            tex.write("\\textbf{RESPOSTA:}\n\n")
             resposta = unicode(q.resposta)
             if (resposta != "None"):
                 tex.write(resposta)
             else:
                 tex.write(u"Não adicionada")
-            tex.write("\n")
+            tex.write("\n\n")
 
 
     tex.write("\end{document}")
