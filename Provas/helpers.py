@@ -48,7 +48,7 @@ CABECALHO=r"""
 \usepackage{shadow}
 \usepackage{pifont}
 \usepackage{graphicx}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage[brazil]{babel}
 \usepackage{comment}
 \usepackage{listings}
