@@ -18,112 +18,10 @@
 
     <script type="text/javascript" src="/static/admin/js/jquery.js"></script>
     <script type="text/javascript" src="/static/javascript/toastr.min.js"></script>
+    <script type="text/javascript" src="/static/javascript/prova_helpers.js"></script>
 
     <script type="text/javascript">
         window.__admin_media_prefix__ = "/static/admin";
-    </script>
-
-
-    <script type="text/javascript">
-
-    // using jQuery
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-
-        function salvar_valor(id_questao, valor_questao) {
-
-            toastr.options = {
-              "debug": false,
-              "positionClass": "toast-bottom-right",
-              "onclick": null,
-              "fadeIn": 300,
-              "fadeOut": 1000,
-              "timeOut": 5000,
-              "extendedTimeOut": 1000,
-              "progressBar": true,
-            };
-
-            valor_questao = valor_questao.replace(",", ".");
-
-            var dataToSend = {id_prova: {{ prova.id }}, id_questao: id_questao, valor_questao: valor_questao};
-            var csrftoken = getCookie('csrftoken');
-
-            $.ajaxSetup({
-                beforeSend: function(xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                },
-                cache: false
-            });
-
-              $.ajax({
-                  url: '/atualiza_valor_questao/',
-                  type: 'POST',
-                  contentType: 'application/x-www-form-urlencoded',
-                  dataType: 'json',
-                  data: JSON.stringify(dataToSend),
-
-                complete: function(result) {
-                    if(result.statusText === 'OK') {
-                        if(result.responseText === 'OK') {
-                            toastr.success("Mudança de valor realizada com sucesso", "Prova atualizada");
-                        }
-                        else if(result.responseText === 'ACIMA'){
-                            toastr.warning("Mudança de valor atualizada. A soma total das questões está acima do valor da prova!", "Prova atualizada")
-                        }
-                        else if(result.responseText === 'ABAIXO') {
-                            toastr.warning("Mudança de valor atualizada. A soma total das questões está abaixo do valor da prova!","Prova atualizada")
-                        }
-
-                    }
-                    else {
-                        toastr.error("Erro ao atualizar prova!")
-                    }
-                }
-
-            });
-        }
-
-         function mudar_ordem(id_questao, ordem, dir) {
-
-            var dataToSend = {id_prova: {{ prova.id }}, id_questao: id_questao, ordem_atual: ordem, direcao: dir};
-            var csrftoken = getCookie('csrftoken');
-
-            $.ajaxSetup({
-                beforeSend: function(xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                },
-                cache: false
-            });
-
-              $.ajax({
-                  url: '/atualiza_ordem_questao/',
-                  type: 'POST',
-                  contentType: 'application/x-www-form-urlencoded',
-                  dataType: 'json',
-                  data: JSON.stringify(dataToSend),
-
-                complete: function(result) {
-                    if (result.statusText == "OK") {
-                        window.location.reload();
-                    }
-                }
-            });
-        }
-
     </script>
 
     <script type="text/javascript">
@@ -157,57 +55,59 @@
                         <tr>
                             <th colspan="5">Data de aplicação: {{ prova.data_aplicacao|date:"d/m/Y" }}</th>
                         <tr>
-                         {% if prova.questoes.all %}
-                            <tr>
-                                <th colspan="5">
-                                    <a rel="nofollow" href="/baixar_fonte/{{ prova.pk }}" >Baixar fonte latex.</a></h1>
-                                </th>
-                            </tr>
-                            <tr>
-                                <th colspan="5">
-                                   <a rel="nofollow" href="/baixar_fonte_gabarito/{{ prova.pk }}" >Baixar fonte latex com gabarito.</a>
-                                </th>
-                            </tr>
-                        {% endif %}
-                        <th colspan="5">
-                                <a href="/questoes/add/{{ prova.pk }}" class="addlink" onclick="return showAddAnotherPopup(this);">Adicionar questão</a>
-                            </th>
+                         <tr>
+                            <th colspan="5">Valor especificado: {{ prova.valor}}</th>
+                        <tr>
+                        <tr>
+                            <th colspan="5"  id="soma_valores">Valor atual da soma das questões: {{ valor_questoes }}</th>
+                        <tr>
                             {% if prova.questoes.all %}
                                 <tr>
-                                    <th>Ordem</th>
-                                    <th>Enunciado</th>
-                                    <th>Valor</th>
-                                    <th>Dificuldade</th>
-                                    <th>Ações</th>
+                                    <th colspan="5">
+                                        <a rel="nofollow" href="/baixar_fonte/{{ prova.pk }}" >Baixar fonte latex.</a></h1>
+                                    </th>
                                 </tr>
-                            {% else %}
                                 <tr>
-                                    <th scope="row">Nenhuma questão adicionada</th>
-                                    <td>&nbsp;</td>
+                                    <th colspan="5">
+                                        <a rel="nofollow" href="/baixar_fonte_gabarito/{{ prova.pk }}" >Baixar fonte latex com gabarito.</a>
+                                    </th>
                                 </tr>
                             {% endif %}
-                           <tr>
+                        <th colspan="5">
+                            <a href="/questoes/add/{{ prova.pk }}" class="addlink" onclick="return showAddAnotherPopup(this);">Adicionar questão</a>
+                        </th>
+                        {% if prova.questoes.all %}
+                            <tr>
+                                <th>Ordem</th>
+                                <th>Enunciado</th>
+                                <th>Valor</th>
+                                <th>Dificuldade</th>
+                                <th>Ações</th>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <th scope="row">Nenhuma questão adicionada</th>
+                                <td>&nbsp;</td>
+                            </tr>
+                        {% endif %}
+                        <tr>
                         </tr>
                         {% for questao in questoes %}
                             <tr>
                                 <th style="text-align: center">
-                                 {% if not forloop.first %}
-                                <i onclick="mudar_ordem({{ questao.pk }},{{ forloop.counter0 }}, 'u')" class="arrow up"></i>
-                                 {% endif %}
-                            {% if not forloop.last %}
-                            <i onclick="mudar_ordem({{ questao.pk }},{{ forloop.counter0 }}, 'd')" class="arrow down"></i>
-                             {% endif %}
-
+                                    {% if not forloop.first %}
+                                        <i onclick="mudar_ordem({{ questao.pk }},{{ forloop.counter0 }}, 'u', {{ prova.id }})" class="arrow up"></i>
+                                    {% endif %}
+                                    {% if not forloop.last %}
+                                        <i onclick="mudar_ordem({{ questao.pk }},{{ forloop.counter0 }}, 'd', {{ prova.id }})" class="arrow down"></i>
+                                    {% endif %}
                                     {{ forloop.counter }}
-
-
-
                                 </th>
                                 <td>
-                                   <strong>{{ questao.enunciado | linebreaksbr}}</strong>
+                                    <strong>{{ questao.enunciado | linebreaksbr}}</strong>
                                 </td>
                                 <td>
-                                    <input onblur="salvar_valor(this.name, this.value)" type="text" name="{{ questao.pk }}" size="5" value = "{{ questao.valor_sugerido }}" />
+                                    <input onblur="salvar_valor(this.name, this.value, {{ prova.id }})" type="text" name="{{ questao.pk }}" size="5" value = "{{ questao.valor_sugerido }}" />
                                 </td>
                                 <td >
                                     {% if questao.dificuldade == 1%}

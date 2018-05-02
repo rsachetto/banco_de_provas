@@ -215,11 +215,13 @@ def mostra_prova(_, prova_id):
         print prova_id
         prova = Prova.objects.get(pk=prova_id)
         questoes = []
+        valor_questoes = 0.0
         count = 0
 
         for index in prova.ordem_questoes:
             q = prova.questoes.get(pk=int(index))
             q.valor_sugerido = prova.valores_questoes[count]
+            valor_questoes += q.valor_sugerido
             count += 1
 
             questoes.append(q)
@@ -228,7 +230,7 @@ def mostra_prova(_, prova_id):
     except Prova.DoesNotExist:
         raise Http404
 
-    return render_to_response('prova.html', {'prova': prova, 'questoes': questoes})
+    return render_to_response('prova.html', {'prova': prova, 'questoes': questoes, 'valor_questoes': valor_questoes})
 
 
 
@@ -258,11 +260,11 @@ def atualiza_valor_questao(request):
                     soma+= float(val)
 
                 if(soma > prova.valor):
-                    return HttpResponse("ACIMA")
+                    return HttpResponse("ACIMA:%.2f" % soma)
                 elif(soma < prova.valor):
-                    return HttpResponse("ABAIXO")
+                    return HttpResponse("ABAIXO:%.2f" % soma)
                 else:
-                    return HttpResponse("OK")
+                    return HttpResponse("OK:%.2f" % soma)
             except:
                 return Http404
         else:
