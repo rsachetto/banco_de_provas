@@ -103,18 +103,18 @@
 {% endblock %}
 
 {% block body %}
-    <body class="dashboard">
+    <body >
 
     <!-- Container -->
     <div id="container">
         {% include "header.html" %}
 
-        <div id="content" class="colSM  " style="width:32%">
+        <div id="content" class="colSM">
             <div id="content-main">
-                <div class="module">
+                <div class="module"  style="width: 500px;">
                     <form action="" method="post" id="tf">
                         {% csrf_token %}
-                        <table>
+                        <table  style="width: 500px;">
                             <caption>Filtro</caption>
                             <tbody>
                             <tr>
@@ -127,31 +127,31 @@
                             </tbody>
                         </table>
                     </form>
-                </div>
-                <div id="tabela_provas" class="module">
-                    <table>
-                        <caption>Provas</caption>
-                        <tbody>
-                        {% if not provas %}
-                            <tr>
-                                <th scope="row">Nenhuma prova criada</th>
-                                <td>&nbsp;</td>
-                            </tr>
-                        {% endif %}
-                        {% for p in provas%}
-                            <tr>
-                                <th>
-                                    <a href="/prova/{{ p.pk }}">{{ p }}</a>
-                                </th>
-                                <td>
-                                    <a onclick="return confirm('Tem certeza que quer apagar esta prova?');" href="/prova/del/{{ p.pk }}" class="deletelink">Remover prova</a> <br/>
-                                    <a rel="nofollow" href="/baixar_fonte/{{ p.pk }}" >Baixar fonte latex.</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                    <div id="tabela_provas">
+                        <table style="width: 500px;">
+                            <caption>Provas</caption>
+                            <tbody>
+                            {% if not provas %}
+                                <tr>
+                                    <th scope="row">Nenhuma prova criada</th>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            {% endif %}
+                            {% for p in provas%}
+                                <tr>
+                                    <th>
+                                        <a href="/prova/{{ p.pk }}">{{ p }}</a>
+                                    </th>
+                                    <td>
+                                        <a class="changelink" rel="nofollow" href="/baixar_fonte/{{ p.pk }}" >Baixar fonte latex.</a> <br/><br/>
+                                        <a onclick="return confirm('Tem certeza que quer apagar esta prova?');" href="/prova/del/{{ p.pk }}" class="deletelink">Remover prova</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                 </div>
             </div>
             <div id="content-related">
                 {% include "menu.html" %}

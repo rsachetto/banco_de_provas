@@ -94,8 +94,7 @@ class Prova(models.Model):
 
     def __unicode__(self):
         data_certa = time.strptime(str(self.data_aplicacao),"%Y-%m-%d")
-
         return "%s: Prova %d - %s - %d pontos" % \
-               (self.disciplina, self.numero_prova,
+               (unicode(self.disciplina), self.numero_prova,
                 time.strftime("%d-%m-%Y", data_certa),
                 self.valor)
