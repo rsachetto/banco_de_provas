@@ -55,6 +55,7 @@ CABECALHO=r"""
 \usepackage{boxit}
 \usepackage[Algoritmo]{algorithm}
 \usepackage[]{algpseudocode}
+\usepackage{amsmath}
 
 %%---------------------------------------------------------------------
 %% New Settings
@@ -219,10 +220,11 @@ import tempfile
 import os
 def gera_latex(prova, gabarito):
 
+
     if(gabarito):
-        arquivo_prova = str(prova).replace(" ", "") + "GABARITO" + str(int(time.time())) + ".tex"
+        arquivo_prova = unicode(prova).replace(" ", "") + "GABARITO" + str(int(time.time())) + ".tex"
     else:
-        arquivo_prova = str(prova).replace(" ", "") + str(int(time.time())) + ".tex"
+        arquivo_prova = unicode(prova).replace(" ", "") + str(int(time.time())) + ".tex"
 
     tex = codecs.open(os.path.join(tempfile.gettempdir(), arquivo_prova), 'w', "utf-8")
 
@@ -241,6 +243,7 @@ def gera_latex(prova, gabarito):
 
     for indice in prova.ordem_questoes:
         questoes.append(prova.questoes.get(pk=int(indice)))
+
 
     valor_total = 0.0
 
@@ -290,12 +293,14 @@ suposições juntamente com as res\-pos\-tas.
 
     tex.write(aux)
 
-    questao = u"\section*{\\ul{\\nextval{ª} Questão} \\textrm{\\normalsize\\textsc{(%d pontos)}}}"
+    cabecalho_questao = u"\section*{\\ul{\\nextval{ª} Questão} \\textrm{\\normalsize\\textsc{(%d pontos)}}}"
 
     for v, q in enumerate(questoes):
-        tex.write(questao % prova.valores_questoes[v])
+
+        tex.write(cabecalho_questao % prova.valores_questoes[v])
         tex.write("\n\n")
         enunciado = unicode(q.enunciado)
+
         tex.write(enunciado)
         tex.write("\n\n")
         if(gabarito):
